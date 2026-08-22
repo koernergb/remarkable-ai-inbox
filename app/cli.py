@@ -5,6 +5,7 @@ from typing import Annotated
 import typer
 
 from app.config import get_settings
+from app.database import Database
 
 app = typer.Typer(
     name="remarkable",
@@ -40,6 +41,41 @@ def doctor(
         raise typer.BadParameter(f"Missing live integration settings: {names}")
 
     typer.echo("Local configuration is valid.")
+
+
+@app.command("init-db")
+def init_db() -> None:
+    """Create or update the local database schema."""
+    settings = get_settings()
+    database = Database(settings.database_url)
+    try:
+        database.initialize()
+    finally:
+        database.close()
+    typer.echo("Database initialized.")
+
+
+@app.command()
+def search(
+    query: Annotated[str, typer.Argument(help="SQLite FTS5 query")],
+    limit: Annotated[int, typer.Option(min=1, max=100)] = 20,
+) -> None:
+    """Search stored page transcriptions."""
+    settings = get_settings()
+    database = Database(settings.database_url)
+    try:
+        database.initialize()
+        results = database.search(query, limit)
+    finally:
+        database.close()
+    if not results:
+        typer.echo("No matches.")
+        return
+    for result in results:
+        typer.echo(f"{result.received_at:%Y-%m-%d} — {result.title}")
+        typer.echo(f"Page {result.page_number}")
+        typer.echo(result.excerpt)
+        typer.echo()
 
 
 def main() -> None:

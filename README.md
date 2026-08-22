@@ -27,7 +27,23 @@ uv run remarkable --help
 
 # Check configuration without displaying secret values
 uv run remarkable doctor
+
+# Initialize the local SQLite schema and FTS5 index
+uv run remarkable init-db
+
+# Search stored page transcriptions using SQLite FTS5 syntax
+uv run remarkable search "eigenvalues"
 ```
+
+## Current implementation
+
+- SQLite models for documents, pages, tasks, processing state, and source-message idempotency.
+- SQLite FTS5 page search with ranked, highlighted excerpts.
+- PDF signature, size, encryption, readability, and page-count validation.
+- Ordered PNG rendering in an automatically cleaned temporary directory.
+- Deterministic detection and bounded context extraction for `@ask`, `@challenge`, `@todo`, and `@summarize`.
+
+External AI and Gmail calls are not enabled yet. They remain behind the human-validation gates in `milestones.md`.
 
 ## Quality checks
 

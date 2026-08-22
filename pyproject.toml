@@ -9,7 +9,9 @@ description = "A lightweight AI inbox for handwritten reMarkable notes"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+  "pymupdf>=1.25,<2",
   "pydantic-settings>=2.6,<3",
+  "sqlalchemy>=2.0,<3",
   "typer>=0.15,<1",
 ]
 
@@ -42,6 +44,7 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 python_version = "3.12"
 strict = true
 files = ["app", "tests"]
+untyped_calls_exclude = ["pymupdf"]
 
 [tool.coverage.run]
 branch = true

@@ -1,10 +1,15 @@
 """CLI smoke tests."""
 
+from datetime import UTC, datetime
+from pathlib import Path
+
 import pytest
 from typer.testing import CliRunner
 
 from app.cli import app
 from app.config import get_settings
+from app.database import Database, sqlite_url
+from app.models import Document, Page
 
 runner = CliRunner()
 
@@ -45,3 +50,45 @@ def test_strict_doctor_explains_missing_settings(monkeypatch: pytest.MonkeyPatch
 
     assert result.exit_code != 0
     assert "Missing live integration settings" in result.output
+
+
+def test_init_db_and_search_commands(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    database_url = sqlite_url(tmp_path / "cli.db")
+    monkeypatch.setenv("REMARKABLE_DATABASE_URL", database_url)
+
+    initialized = runner.invoke(app, ["init-db"])
+    assert initialized.exit_code == 0
+    assert "Database initialized" in initialized.stdout
+
+    database = Database(database_url)
+    document = database.add_document(
+        Document(
+            source_message_id="cli-message",
+            filename="notes.pdf",
+            title="Linear Systems",
+            sender="writer@example.com",
+            received_at=datetime(2026, 8, 22, tzinfo=UTC),
+            raw_pdf_path="data/documents/example.pdf",
+        )
+    )
+    database.add_page(
+        Page(document_id=document.id, page_number=3, markdown="Stability depends on eigenvalues")
+    )
+
+    get_settings.cache_clear()
+    searched = runner.invoke(app, ["search", "eigenvalues"])
+
+    assert searched.exit_code == 0
+    assert "2026-08-22 — Linear Systems" in searched.stdout
+    assert "Page 3" in searched.stdout
+    assert "[eigenvalues]" in searched.stdout
+    database.close()
+
+
+def test_search_without_matches(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("REMARKABLE_DATABASE_URL", sqlite_url(tmp_path / "empty.db"))
+
+    result = runner.invoke(app, ["search", "eigenvalues"])
+
+    assert result.exit_code == 0
+    assert result.stdout == "No matches.\n"
