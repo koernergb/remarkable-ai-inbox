@@ -81,6 +81,15 @@ Agree on the few external-service and product decisions that affect the applicat
 
 The agent must pause and ask the human to approve or revise the six decisions above. No credentials should be requested yet. Record the accepted decisions in the README or an architecture-decision section of this file.
 
+### Approved decisions — 2026-08-22
+
+- Use the OpenAI Responses API with a configurable vision-capable model.
+- Use the Gmail API with OAuth for inbox access; do not use IMAP passwords.
+- Send replies through the Gmail API using the same account.
+- Use dedicated `remarkable-ai` and `remarkable-ai/processed` Gmail labels.
+- Process mail only from an explicit sender allowlist.
+- Retain original PDFs and extracted Markdown indefinitely for the MVP; delete temporary page images after successful processing.
+
 ### Exit artifact
 
 - Documented, human-approved integration and retention choices.
@@ -606,4 +615,3 @@ Human action required:
 Next after approval:
 - ...
 ```
-

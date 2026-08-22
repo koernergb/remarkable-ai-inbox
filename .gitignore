@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+dist/
+build/
+*.egg-info/
+
+# Local configuration and credentials
+.env
+credentials*.json
+token*.json
+*.pem
+
+# Application data
+remarkable.db
+remarkable.db-*
+data/documents/*
+!data/documents/.gitkeep
+data/tmp/
+
+# Editor and operating system
+.DS_Store
+.idea/
+.vscode/
