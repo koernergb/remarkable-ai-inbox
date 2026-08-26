@@ -34,6 +34,7 @@ def doctor(
     typer.echo(f"OpenAI model configured: {settings.openai_model is not None}")
     typer.echo(f"Gmail credentials configured: {settings.gmail_credentials_path is not None}")
     typer.echo(f"Allowed senders configured: {bool(settings.allowed_senders)}")
+    typer.echo(f"Obsidian vault configured: {settings.obsidian_vault_path is not None}")
 
     missing = settings.missing_live_settings
     if strict and missing:

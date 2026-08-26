@@ -15,6 +15,8 @@ def test_settings_have_safe_local_defaults() -> None:
     assert settings.database_url == "sqlite:///remarkable.db"
     assert settings.openai_api_key is None
     assert settings.allowed_senders == []
+    assert settings.obsidian_vault_path is None
+    assert settings.obsidian_notes_folder == "Remarkable/Notes"
 
 
 def test_sender_environment_value_is_comma_separated(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -41,3 +43,4 @@ def test_missing_live_settings_are_actionable() -> None:
 
     assert "REMARKABLE_OPENAI_API_KEY" in settings.missing_live_settings
     assert "REMARKABLE_ALLOWED_SENDERS" in settings.missing_live_settings
+    assert "REMARKABLE_OBSIDIAN_VAULT_PATH" in settings.missing_live_settings

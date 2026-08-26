@@ -27,6 +27,7 @@ class DocumentStatus(StrEnum):
     RENDERED = "rendered"
     TRANSCRIBED = "transcribed"
     PROCESSED = "processed"
+    EXPORTED = "exported"
     REPLIED = "replied"
     FAILED = "failed"
 

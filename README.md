@@ -1,6 +1,8 @@
-# reMarkable AI Inbox
+# reMarkable to Obsidian
 
-A lightweight Python application that receives reMarkable PDF exports, transcribes handwritten pages into Markdown, processes a small set of handwritten AI commands, stores the results, and replies by email.
+A lightweight Python application that receives reMarkable PDF exports, transcribes handwritten pages into Markdown, and places both the Markdown and original PDF into an Obsidian vault.
+
+Email is intake only. Obsidian is where notes are read, searched, linked, edited, and used with AI.
 
 The project is under active development. See [`build_brief.md`](build_brief.md) for the product scope and [`milestones.md`](milestones.md) for the implementation and human-validation gates.
 
@@ -17,7 +19,7 @@ cp .env.example .env
 uv run remarkable --help
 ```
 
-The `.env` file is ignored by Git. Never commit API keys, Gmail OAuth credentials, OAuth tokens, notebook PDFs, rendered pages, transcriptions, or the SQLite database.
+The `.env` file is ignored by Git. Never commit API keys, Gmail OAuth credentials, OAuth tokens, notebook PDFs, rendered pages, transcriptions, vault contents, or the SQLite database.
 
 ## Commands
 
@@ -41,9 +43,10 @@ uv run remarkable search "eigenvalues"
 - SQLite FTS5 page search with ranked, highlighted excerpts.
 - PDF signature, size, encryption, readability, and page-count validation.
 - Ordered PNG rendering in an automatically cleaned temporary directory.
-- Deterministic detection and bounded context extraction for `@ask`, `@challenge`, `@todo`, and `@summarize`.
+- Safe Obsidian export with properties, stable page markers, linked PDFs, atomic writes, idempotent retries, and conflict detection.
+- A command parser remains available, but `@ask`, `@challenge`, and `@summarize` are no longer part of the revised MVP workflow.
 
-External AI and Gmail calls are not enabled yet. They remain behind the human-validation gates in `milestones.md`.
+External AI and Gmail calls are not enabled yet. The exporter currently uses temporary test vaults only; access to a real vault remains behind the human-validation gate in `milestones.md`.
 
 ## Quality checks
 
@@ -57,10 +60,12 @@ uv run pytest --cov=app
 ## Approved MVP decisions
 
 - OpenAI Responses API with a configurable vision-capable model.
-- Gmail API with OAuth for inbox access and outbound replies.
+- Gmail API with OAuth for inbox access only; no response email.
 - Dedicated `remarkable-ai` and `remarkable-ai/processed` labels.
 - Explicit sender allowlist.
-- Original PDFs and Markdown are retained indefinitely for the MVP.
+- Obsidian is the canonical user-facing notes store; SQLite is operational state.
+- Original PDFs and Markdown are retained in the vault.
 - Temporary rendered page images are removed after successful processing.
+- AI/RAG is evaluated inside Obsidian after transcription ingestion is dependable.
 
 External credentials are not needed for the repository scaffold. Setup instructions for each integration will be added immediately before its live validation milestone.

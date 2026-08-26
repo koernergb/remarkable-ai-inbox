@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     gmail_processed_label: str = "remarkable-ai/processed"
     allowed_senders: SenderList = []
 
+    obsidian_vault_path: Path | None = None
+    obsidian_notes_folder: str = "Remarkable/Notes"
+    obsidian_attachments_folder: str = "Remarkable/Attachments"
+    obsidian_default_tag: str = "remarkable"
+
     @property
     def redacted_database_url(self) -> str:
         """Return a safe database description for diagnostics."""
@@ -57,6 +62,7 @@ class Settings(BaseSettings):
             "REMARKABLE_GMAIL_CREDENTIALS_PATH": self.gmail_credentials_path,
             "REMARKABLE_GMAIL_TOKEN_PATH": self.gmail_token_path,
             "REMARKABLE_ALLOWED_SENDERS": self.allowed_senders,
+            "REMARKABLE_OBSIDIAN_VAULT_PATH": self.obsidian_vault_path,
         }
         return [name for name, value in values.items() if not value]
 
