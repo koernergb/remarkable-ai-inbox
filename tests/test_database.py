@@ -7,7 +7,12 @@ from pathlib import Path
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from app.database import Database, DuplicateMessageError, sqlite_url
+from app.database import (
+    Database,
+    DuplicateMessageError,
+    PageTranscriptionConflictError,
+    sqlite_url,
+)
 from app.models import Document, DocumentStatus, Page, Task
 
 
@@ -102,3 +107,31 @@ def test_failed_status_records_error(database: Database) -> None:
 def test_missing_document_status_update_fails(database: Database) -> None:
     with pytest.raises(KeyError):
         database.set_status("missing", DocumentStatus.PROCESSED)
+
+
+def test_page_transcription_checkpoint_is_idempotent(database: Database) -> None:
+    document = database.add_document(make_document())
+
+    first = database.save_page_transcription(document.id, 1, "# First page")
+    repeated = database.save_page_transcription(document.id, 1, "# First page")
+
+    assert first.id == repeated.id
+    assert database.page_markdown(document.id) == {1: "# First page"}
+
+
+def test_page_transcription_checkpoint_refuses_overwrite(database: Database) -> None:
+    document = database.add_document(make_document())
+    database.save_page_transcription(document.id, 1, "Original")
+
+    with pytest.raises(PageTranscriptionConflictError, match="different transcription"):
+        database.save_page_transcription(document.id, 1, "Replacement")
+
+
+@pytest.mark.parametrize(("page_number", "markdown"), [(0, "text"), (1, " ")])
+def test_page_transcription_checkpoint_validates_input(
+    database: Database, page_number: int, markdown: str
+) -> None:
+    document = database.add_document(make_document())
+
+    with pytest.raises(ValueError):
+        database.save_page_transcription(document.id, page_number, markdown)

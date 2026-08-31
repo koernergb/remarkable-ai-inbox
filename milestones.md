@@ -32,7 +32,7 @@ Every milestone requires all tests, formatting, linting, and strict type checkin
 | 3. PDF validation and rendering | Complete |
 | 4. Command parser | Complete but no longer central; only `@todo` may remain |
 | 5. Obsidian export | In progress |
-| 6. Vision transcription | Pending |
+| 6. Vision transcription | Implementation complete; live privacy and quality validation pending |
 | 7. Local end-to-end pipeline | Pending |
 | 8. Gmail intake | Pending |
 | 9. Real-vault validation | Pending |
@@ -172,6 +172,17 @@ Before the first live request, pause and ask the human to configure the API key 
 ### Mandatory quality gate
 
 Show original pages beside Markdown. The human validates fidelity, structure, equations, diagrams, commands, omissions, and appropriate `[?]` usage.
+
+### Implementation status — 2026-08-26
+
+- Provider protocol, deterministic fake provider, and OpenAI Responses API adapter implemented.
+- Base64 PNG requests use `detail: original` for OCR-like fidelity.
+- Model remains configurable; `.env.example` records the current documented recommendation.
+- Transient failures use bounded exponential retries; authentication and invalid-response failures do not retry.
+- Operational metadata excludes note contents and secret-bearing provider messages.
+- Dry-run reports page count and payload sizes without constructing or sending a request.
+- Successful pages checkpoint individually in SQLite; partial work resumes without repeated requests.
+- Automated implementation verification is complete. No live API request has been made, so the privacy and quality gates above remain open.
 
 ---
 

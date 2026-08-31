@@ -25,6 +25,10 @@ class SearchUnavailableError(RuntimeError):
     """Raised when the local SQLite build lacks FTS5."""
 
 
+class PageTranscriptionConflictError(RuntimeError):
+    """Raised rather than silently replacing an existing page transcription."""
+
+
 @dataclass(frozen=True)
 class SearchResult:
     """One page-level full-text search match."""
@@ -126,6 +130,38 @@ class Database:
             session.add(page)
             session.flush()
         return page
+
+    def page_markdown(self, document_id: str) -> dict[int, str]:
+        """Return completed page Markdown for resume-safe transcription."""
+        with self.session() as session:
+            pages = session.scalars(
+                select(Page).where(Page.document_id == document_id).order_by(Page.page_number)
+            )
+            return {page.page_number: page.markdown for page in pages}
+
+    def save_page_transcription(self, document_id: str, page_number: int, markdown: str) -> Page:
+        """Persist one page idempotently without overwriting differing content."""
+        if page_number < 1:
+            raise ValueError("page_number must be positive")
+        if not markdown.strip():
+            raise ValueError("markdown must not be empty")
+        with self.session() as session:
+            page = session.scalar(
+                select(Page).where(
+                    Page.document_id == document_id,
+                    Page.page_number == page_number,
+                )
+            )
+            if page is not None:
+                if page.markdown != markdown:
+                    raise PageTranscriptionConflictError(
+                        f"Page {page_number} already has a different transcription"
+                    )
+                return page
+            page = Page(document_id=document_id, page_number=page_number, markdown=markdown)
+            session.add(page)
+            session.flush()
+            return page
 
     def add_task(self, task: Task) -> Task:
         with self.session() as session:
